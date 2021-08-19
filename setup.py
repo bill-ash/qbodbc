@@ -9,7 +9,7 @@ setup(
     version='0.0.1', 
     author='William Ash', 
     author_email='bill@overco.net', 
-    description='QuickBooks library', 
+    description='QuickBooks Library', 
     long_description=long_description, 
     long_description_content_type='text/markdown', 
     url='https://github.com/bill-ash/qbodbc', 
