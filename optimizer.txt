@@ -1,0 +1,13 @@
+
+You can take backup of Optimizer file in your backup folder after Optimizer file build up. 
+This might help you if optimizer file gets corrupted. You can save the number of hours 
+for building new optimizer file if you have this file. You can restore backup in case of 
+Optimizer corruption. You need to remove corrupted .opt file & place Optimizer backup file
+in your Optimizer path (the default path is %AppData%\QODBC Driver for QuickBooks\Optimizer). 
+After restoring .opt file you need to run sp_optimizeupdatesync ALL for getting delta changes.
+This command will synchronize the all table data with the QuickBooks data file using changed and
+deleted data. It is useful for making sure that the optimizer is up to date with
+the QuickBooks company file.
+
+Optimizer enhancements:
+https://stackoverflow.com/questions/35104497/qodbc-performance-optimizations/35130934#35130934

@@ -5,5 +5,4 @@ def simple_add():
 
 def test_addition(): 
     z = simple_add()
-
     assert z == 2

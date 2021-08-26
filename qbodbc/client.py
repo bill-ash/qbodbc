@@ -2,16 +2,20 @@ import pyodbc
 import pandas as pd 
 from .exceptions import QBCreateMethod, QBMissingTable
 
-class QBConnect: 
+class QB: 
     """Connection manager"""
     def __init__(self, DSN=None): 
         self.dsn = DSN if DSN else "cdata"
         con_string = "DSN=" + self.dsn
         print("Connecting to", con_string)
-        self._connection = pyodbc.connect(con_string)
+        try:
+            self._connection = pyodbc.connect(con_string)
+        except Exception as e:
+            print(e)
+            raise Exception("Could not connect to:", DSN)
         pyodbc.pooling = False
 
-    def qb_query(self, query):
+    def query(self, query):
         """Raw sql returns response as a pandas df""" 
         print("Preparing query for\n", query)
         try: 
@@ -20,18 +24,18 @@ class QBConnect:
             print("Error: ", e)
             raise QBMissingTable
 
-    def qb_create(self, obj): 
+    def create(self, obj): 
         """Takes a QuickBooks object: customer, account, bill, jouranl entry, 
         with the _create() method implemented. 
         """
         try:
             cx = self._connection.cursor()
-            return obj._create(connection = cx)
         # Checks the _create() method is implemented or raises an exception
+            return obj._create(connection = cx)
         except AttributeError:
             raise QBCreateMethod
 
-    def qb_close(self):
+    def close(self):
         """Close the connection to the current QuickBooks instance.
         Modify the DSN to prevent the current session from being closed.
         Will still close the file when opening a closed file.""" 

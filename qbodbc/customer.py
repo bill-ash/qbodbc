@@ -1,4 +1,5 @@
-class QBCustomer:
+
+class Customer:
     def __init__(self, customer, account_number=''):
         """Customer Model:
         Initialize a customer with the minimum requirements.
@@ -7,7 +8,6 @@ class QBCustomer:
         self.account_number=account_number
         # self.first_name=first_name
         # self.last_name=last_name
-
 
     def job(self, job):
         """Create a job for the specific customer."""
