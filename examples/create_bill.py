@@ -1,7 +1,9 @@
 import qbodbc
 from qbodbc.bill import Bill 
-from qbodbc.utils import process_insert
+from qbodbc.utils import format_decimal, process_insert
 import datetime         
+from qbodbc import QB
+from decimal import Decimal
 
 ## Insert a bill using raw sql 
 
@@ -46,11 +48,14 @@ bill_header_insert = {
     "Memo": "TEST INSERT PO 123321" 
 }
 
-from decimal import * 
+qb_con = QB("qbtest")
 
 process_insert(bill_line_insert, "BillExpenseLine")
 process_insert(bill_header_insert, "Bill")
 
+
+format_decimal(bill_header_insert.values())
+format_decimal(bill_line_insert.values())
 # Paramterized queries and date times work 
 zz = ['Utilities'.encode("utf-8"), Decimal("23.11"), 'testerone'.encode("utf-8"), Decimal(1)]
 cx.execute(process_insert(bill_line_insert, "BillExpenseLine"), *zz)
@@ -86,18 +91,7 @@ test_bill = Bill(
     )
 
 test_bill.header
+
 names = list(test_bill.header.keys())
 vals = list(test_bill.header.values())
 
-','.join(names)
-
-z = list(test_bill.header.values())[0]
-
-type(z) == datetime.date
-z.strftime("%Y-%m-%d")
-
-
-
-test_bill.header
-
-"""INSERT INTO Bill () VALUES ()"""

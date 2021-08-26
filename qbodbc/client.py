@@ -9,11 +9,16 @@ class QB:
         con_string = "DSN=" + self.dsn
         print("Connecting to", con_string)
         try:
-            self._connection = pyodbc.connect(con_string)
+            self._connection = pyodbc.connect(
+                con_string, ansi=True, autocommit=True
+                )
         except Exception as e:
             print(e)
             raise Exception("Could not connect to:", DSN)
         pyodbc.pooling = False
+        self._connection.setencoding(encoding='utf8')
+
+        
 
     def query(self, query):
         """Raw sql returns response as a pandas df""" 
@@ -40,6 +45,10 @@ class QB:
         Modify the DSN to prevent the current session from being closed.
         Will still close the file when opening a closed file.""" 
         self._connection.close()
+
+    def __close__(self): 
+        """Not sure which methods need to be implemented yet."""
+        self.close()
 
 
 # def qb_connect(dsn): 
