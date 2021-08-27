@@ -36,7 +36,7 @@ class QB:
         try:
             cx = self._connection.cursor()
         # Checks the _create() method is implemented or raises an exception
-            return obj._create(connection = cx)
+            return obj._create(cx)
         except AttributeError:
             raise QBCreateMethod
 

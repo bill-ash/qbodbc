@@ -13,16 +13,16 @@ class Customer:
         """Create a job for the specific customer."""
         self.job = job
 
-    def _create(self, connection):
+    def _create(self, conn):
         """Create the Customer and Customer Job in one step. If the 
         Customer already exists, create the job. Response object is the
         created values + guids."""
         resp = {}
         q = f"""Insert Into Customer (Name, AccountNumber) VALUES ('{self.customer}', '{self.account_number}')"""
         try:
-            connection.execute(q)
+            conn.execute(q)
             return {
-                "id": connection.execute("sp_lastinsertid Customer").fetchone()[0],
+                "id": conn.execute("sp_lastinsertid Customer").fetchone()[0],
                 "customer": self.customer
             }
         except Exception as e:
