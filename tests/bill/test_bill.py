@@ -22,40 +22,37 @@ bill_test.add_expense(account = "Utilities",
         amount = as_decimal(10.99)
         )
 
+# Connect using a QB object to enforce UTF-8 encoding
+con = QB("qbtest")
+
+def test_exists(): 
+        bill_test
+
 def test_bill(): 
     assert bill_test.header["VendorRefFullName"] == "Computer Store"
 
 def test_add(): 
-
-    assert bill_test.line_item[0]["item"] == "Books for Resale"
-    assert bill_test.line_expense[0]["memo"] == "OverRideTheDefault"
-
-
-# # Connect using a QB object to enforce UTF-8 encoding
-# con = QB("qbtest")
-# bill_test
+    assert bill_test.line_item[0]["ItemLineItemRefFullName"] == "Books for Resale"
+    assert bill_test.line_expense[0]["ExpenseLineMemo"] == "testMemo"
 
 
-# # Update at insert with some logic 
-# bill_test.line_expense[0]["FQSaveToCache"] = as_decimal(1)
-# bill_test.line_item[0]["FQSaveToCache"] = as_decimal(1)
 
-# # Test the inserts 
-# bill_header = process_insert(bill_test.header, "Bill")
-# bill_item_line = process_insert(bill_test.line_item[0], "BillItemLine")
-# bill_expense_line = process_insert(bill_test.line_expense[0], "BillExpenseLine")
+def test_bill_inserts(): 
+        # # Test the inserts 
+        bill_header = process_insert(bill_test.header, "Bill")
+        assert bill_header == "INSERT INTO Bill (VendorRefFullName, APAccountRefFullName, TxnDate, RefNumber, Memo, DueDate) VALUES (?,?,?,?,?,?)"
 
-# # Insert item line 
-# con._connection.execute(bill_item_line, *list(bill_test.line_item[0].values()))
+        bill_item_line = process_insert(bill_test.line_item[0], "BillItemLine")
+        assert bill_item_line == "INSERT INTO BillItemLine (ItemLineItemRefFullName, ItemLineDesc, ItemLineQuantity, ItemLineCost) VALUES (?,?,?,?)"
+        
+        bill_expense_line = process_insert(bill_test.line_expense[0], "BillExpenseLine")
+        assert bill_expense_line == "INSERT INTO BillExpenseLine (ExpenseLineAccountRefFullName, ExpenseLineMemo, ExpenseLineAmount) VALUES (?,?,?)"
 
-# # Insert expense line 
-# con._connection.execute(bill_expense_line, *list(bill_test.line_expense[0].values()))
 
-# # Insert bill header 
-# con._connection.execute(bill_header, *list(bill_test.header.values()))
-
-# # Final implementation 
-# # con.create(bill_test)
+def test_bill_add(): 
+        # Final implementation 
+        resp = con.create(bill_test)
+        assert resp["vendor"] == bill_test.header["VendorRefFullName"]
 
 # con.query("SELECT * FROM Bill")
 

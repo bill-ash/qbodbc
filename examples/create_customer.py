@@ -10,6 +10,7 @@ qb_con = QB("qbtest")
 
 # Create a single customer 
 client = "SUPERHERO" + random_string()
+
 test_customer = Customer(client, "33211")
 
 cust_resp = qb_con.create(test_customer)
@@ -18,7 +19,7 @@ cust_resp = qb_con.create(test_customer)
 customer = qb_con.query("SELECT * FROM Customer")
 
 # Adjust optimizer settings to make the insert available immediately 
-assert client == customer[customer['Name'] == client]['Name'][1]
+assert client == customer[customer['Name'] == client]['Name'][0]
 
 # Count the number of customers 
 len(customer)
