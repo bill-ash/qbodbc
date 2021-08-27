@@ -17,7 +17,8 @@ test_bill = Bill(vendor = "Data Storage Co.",
 # Add a line item 
 test_bill.add_item(
     "Deposit", "Deposit for future work.", as_decimal(1), 
-    as_decimal(99.99), ItemLineClassRefFullName = "Project"
+    as_decimal(99.99) 
+    # ItemLineClassRefFullName = "Project"
     )
 
 # Add an expense line 
@@ -33,8 +34,10 @@ con = QB("qbtest")
 # Inspect the bill 
 test_bill
 
+
 # Create the bill using the connection object
 bill_resp = con.create(test_bill)
 
 # Close the connection 
 con.close()
+
