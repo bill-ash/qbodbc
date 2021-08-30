@@ -54,6 +54,10 @@ def test_bill_add():
         resp = con.create(bill_test)
         assert resp["vendor"] == bill_test.header["VendorRefFullName"]
 
+def test_close_connection(): 
+        con.close()
+
+
 # con.query("SELECT * FROM Bill")
 
 # # Cache results 
@@ -62,5 +66,3 @@ def test_bill_add():
 
 # Bill.get_table(con)
 # assert list(Bill._table["TxnID"]) == list(bill_test._table["TxnID"])
-
-# con.close()
