@@ -4,13 +4,13 @@ from .exceptions import QBCreateMethod, QBMissingTable
 
 class QB: 
     """Connection manager"""
-    def __init__(self, DSN=None, RemoteDSN=None, ip=None, port=4500): 
+    def __init__(self, DSN=None, RemoteDSN=None, ip="192.168.14.143", port=4500): 
         # self.dsn = DSN
         # self.RemoteDSN = RemoteDSN
         if DSN:
             con_string = "DSN=" + DSN
         else: 
-            con_string = "Driver={QRemote for QuickBooks};OLE DB Services=-2;IPAddress=192.168.14.143;Port=4500;" + "RemoteDSN={remote_dsn};".format(remote_dsn=RemoteDSN)
+            con_string = "Driver={QRemote for QuickBooks};OLE DB Services=-2;" + "IPAddress={ip};Port={port};RemoteDSN={remote_dsn};".format(ip=ip, port=port, remote_dsn=RemoteDSN)
 
         print("Connecting to", con_string)
         try:
