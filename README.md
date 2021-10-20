@@ -2,8 +2,6 @@
 
 Connect to your QuickBooks desktop instance with Python. 
 
-Update.
-
 # Connecting 
 
 The application server, and the QuickBooks instance must be on 
@@ -12,3 +10,5 @@ on the QuickBooks application box.
 
 The alternative is to run middleware in front of the QuickBooks 
 instnace that can deserialize and process incoming qbodbc objects.
+
+Testing key.
