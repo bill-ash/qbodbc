@@ -10,5 +10,3 @@ on the QuickBooks application box.
 
 The alternative is to run middleware in front of the QuickBooks 
 instnace that can deserialize and process incoming qbodbc objects.
-
-Another key.
