@@ -1,4 +1,7 @@
-FROM python:3.9.6-alpine3.14
+FROM python:3.9.6-windowsservercore-1809
+
+# The only way to call QuickBooks from Docker is 
+# is through a linked server connection. 
 
 COPY ./script.py . 
 COPY ./requirements.txt . 
