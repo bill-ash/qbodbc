@@ -1,6 +1,6 @@
 import pytest 
 from qbodbc.utils import process_insert, as_decimal, as_date
-from qbodbc.bill import Bill
+from qbodbc.objects import Bill
 from qbodbc import QB 
 
 bill_test = Bill(vendor = "Computer Store", 
