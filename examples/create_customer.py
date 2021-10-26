@@ -48,4 +48,3 @@ qb_con.create(cust_error)
 # Close the connection
 qb_con.close()
 
-
