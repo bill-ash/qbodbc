@@ -1,7 +1,7 @@
 from typing import Optional, List
 
 from dataclasses import dataclass
-from qbodbc import QB 
+from qbodbc.client import QuickBooks 
 from qbodbc.utils import * 
 import pandas as pd 
 from decimal import Decimal 

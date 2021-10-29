@@ -1,5 +1,5 @@
 from qbodbc import QB
-from qbodbc.bill import Bill 
+from qbodbc.objects import Bill 
 from qbodbc.utils import as_decimal
 
 import datetime         

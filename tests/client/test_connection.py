@@ -1,9 +1,10 @@
 import pytest
-from qbodbc import QB
+from qbodbc import QuickBooks 
 from qbodbc.exceptions import QBMissingTable
 
 def test_connection(): 
-    con = QB('qbtest')
+    con = QuickBooks('qbtest')
+    con.connect()
     customer = con.query('SELECT * FROM Customer')
     
     with pytest.raises(QBMissingTable) as e_info: 
@@ -13,11 +14,21 @@ def test_connection():
 
 def test_connection_error():     
     with pytest.raises(Exception):
-        error_con = QB("MissingFile")
+        error_con = QuickBooks("MissingFile").connect()
 
+def test_query(): 
+    
+    qb = QuickBooks(remote_dsn='qbtest')
+    qb.connect()
 
-# def test_call():
-#     con = QB("qbtest")
-#     account = con.query("SELECT * FROM Account")
-#     assert len(account) > 1
-#     con.close()
+    qb.tables()
+    qb.last_insert('Customer')
+    qb.cursor.execute('sp_tables')
+    qb.cursor.fetchone()
+ 
+def test_call():
+    con = QuickBooks("qbtest")
+    con.connect()
+    account = con.query("SELECT * FROM Account")
+    assert len(account) > 1
+    con.close()
