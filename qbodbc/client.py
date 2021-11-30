@@ -1,7 +1,12 @@
+import logging 
 from pprint import pprint 
-import pyodbc
+
 import pandas as pd 
-from .exceptions import QBCreateMethod, QBMissingTable
+import pyodbc
+from .exceptions import (
+    QuickBooksError, QBCreateMethod, QBMissingTable, QBConnectionError
+)
+
 
 class QuickBooks: 
     pyodbc.pooling = False
@@ -20,39 +25,36 @@ class QuickBooks:
         self.cnxn = None
         self.cursor = None
 
-
-    def connect(self): 
+    def connect(self):
+        """Initialize the connection and set the curor to be used in all calls.""" 
         try:
             if self.cnxn is None:
-                print("Connecting to", self.connection_string)
-                self.cnxn = pyodbc.connect(
-                    self.connection_string, ansi=True, autocommit=True
-                    )
+                logging.info('Connecting to: ', self.connection_string)
+                self.cnxn = pyodbc.connect(self.connection_string, ansi=True, autocommit=True)
                 self.cnxn.setencoding(encoding='utf-8')
                 self.cursor = self.cnxn.cursor()
-                return self.cursor
             else: 
-                return self.cnxn.cursor()
+                """Reconnect"""
+                self.cursor = self.cnxn.cursor()
 
         except Exception as e:
-            print(e)
-            raise Exception("Could not connect to:", self.connection_string)
+            raise QBConnectionError('Could not connect to: ', self.connection_string)
 
 
     def query(self, query):
         """Raw sql returns response as a pandas df""" 
-        print("Preparing query for\n", query)
+        logging.info("Preparing query for\n", query)
         try: 
             return pd.read_sql(query, self.cnxn)
         except Exception as e: 
-            print("Error: ", e)
-            raise QBMissingTable
+            raise QBMissingTable('Not a table...')
 
-    def sql(self, sql, params=None):
-        """Executes some raw sql"""
+    def sql(self, sql, params=[]):
+        """Execute some raw sql. Params passes as a list."""
         return self.cursor.execute(sql, params)
 
     def last_insert(self, table): 
+        """Fetch last insert"""
         return self.cursor.execute(f'sp_lastinsertid {table}').fetchval()
 
     def columns(self, table): 
@@ -76,17 +78,14 @@ class QuickBooks:
 
     def tables(self): 
         cc = [list((c[2], c[4])) for c in self.cursor.execute('sp_tables').fetchall()]
-        # pprint(cc, width=200)
         print(*cc, sep='\n')
     
     
     def file_name(self): 
         return self.cursor.execute('sp_qbfilename').fetchval()
 
-
     def delete(self, table, transaction_id): 
         return self.cursor.execute(f'sp_void {table} where TxnID = ?', transaction_id).fetchval()
-
 
     def close(self):
         """Close the connection to the current QuickBooks instance.

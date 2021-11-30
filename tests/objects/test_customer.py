@@ -1,21 +1,21 @@
 import random
 import pytest
- 
+from datetime import datetime 
+from tests.test_base import TestConf
 from qbodbc import QuickBooks
 from qbodbc.objects import Customer
-from qbodbc.utils import name_generator
+from qbodbc.utils import name_generator, account_generator
+from pyodbc import ProgrammingError
 
 def test_insert(): 
     
-    session = QuickBooks(remote_dsn="qbtest")
-    
-    c1 = {'Name':name_generator(), 'AccountNumber':"123321"}
-    c2 = {'Name':name_generator(), 'AccountNumber':"123321"}
-    c3 = {'Name':name_generator(), 'AccountNumber':"123321"}
+    c1 = {'Name':name_generator(), 'AccountNumber':'123321'}
+    c2 = {'Name':name_generator(), 'AccountNumber':account_generator()}
+    c3 = {'Name':name_generator(), 'AccountNumber':account_generator(), 'Phone': '2313211232'}
     
     cust = Customer(**c1)
-    cust1 = Customer()
 
+    cust1 = Customer()
     cust1.Name = c2.get('Name')
     cust1.AccountNumber = c2.get('AccountNumber')
     
@@ -27,41 +27,38 @@ def test_insert():
     assert type(cust.Name) == str
     assert type(cust.AccountNumber) == str
     assert cust.AccountNumber == "123321"
-    
-    # Create a connection which returns a cursor
-    # Optionally session.connect().cursor 
-    # Pass the session object to all create methods
-    insert_cursor = session.connect()
 
-    # cust1.save(qb=session)
+    # Create a session object - session object gets passed to the table object
+    session = QuickBooks(TestConf.DSN)
+    session.connect()
+
     session.query('select * from customer')
     session.cursor.execute('select * from customer')
-    insert_cursor.execute('select * from customer').fetchall()
     
-    # Helper functions from BaseObject
-    cust.to_names()
-    cust.to_q()
     
-    # Manually create a customer 
-    resp = insert_cursor.execute("""
+    # Manually create a customer - need to manually retreive the result
+    resp = session.cursor.execute("""
         Insert Into Customer (name, accountnumber)
             VALUES (?, ?)
-        """, cust.to_values())
+        """, ['McHarry' + datetime.now().strftime('%y%m%d%H%M%S'), '123321123'])
     
-    last_insert = session.last_insert('customer')
-
-    cust2.to_names()
-    cust2.to_values()
-    cust2.to_q()
-
-    c2_resp = insert_cursor.execute(f'insert into customer ({cust2.to_names()}) values ({cust2.to_q()})', cust2.to_values())
-    last_insert = session.last_insert('customer')
-        
-    resp_list = [c.create(qb=session) for c in customers]
+    with pytest.raises(ProgrammingError):
+        resp.fetchval()
     
-    resp = Customer().get(FullName = '')
+    # ListId of the last created object 
+    resp = session.last_insert('Customer')
+    assert isinstance(resp, str)
 
+    # Pass all args as strings 
+    session.cursor.execute(f'insert into customer ({cust2.to_names()}) values ({cust2.to_params()})', cust2.to_values())
+    last_insert = session.last_insert('customer')
+    assert isinstance(last_insert, str)
+
+    # When using the save method the last insert and primary key are returned 
+    resp_list = [c.save(qb=session) for c in customers]
+    
     session.close()
+
 
 
     

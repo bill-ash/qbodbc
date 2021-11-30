@@ -1,6 +1,7 @@
 import datetime 
 from decimal import Decimal 
 import random 
+import secrets
 
 # Don't need to format date!!! Will accept date time attribute! 
 # def format_date(date): 
@@ -44,3 +45,14 @@ def name_generator():
         ]
 
     return f"{random.choice(first_name)} {random.choice(last_name)}"
+
+
+def account_generator(): 
+    return str(secrets.randbits(29))
+
+
+class Ref: 
+    def __init__(self): 
+        self.Name = ""
+        self.Value = ""
+        

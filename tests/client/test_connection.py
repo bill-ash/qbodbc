@@ -1,42 +1,78 @@
 import pytest
-from qbodbc import QuickBooks 
-from qbodbc.exceptions import QBMissingTable
 import pandas as pd 
+from pyodbc import Connection, Cursor, Row
+
+from qbodbc import QuickBooks 
+from qbodbc.exceptions import QBMissingTable, QBConnectionError
+from tests.test_base import TestConf
 
 
 def test_connection(): 
-    quick_books = QuickBooks('qbtest')
-    quick_books.connect()
+    session = QuickBooks(TestConf.DSN)
+    session.connect()
     
-    customer = quick_books.query('SELECT * FROM Customer')
+    customer = session.query('SELECT * FROM Customer')
     assert isinstance(customer, pd.DataFrame)
+    account = session.query('SELECT * FROM Account')
+    assert isinstance(account, pd.DataFrame)
     
-
     with pytest.raises(QBMissingTable) as e_info: 
-        error = quick_books.query("SELECT * FROM Missing")
+        error = session.query("SELECT * FROM Missing")
     
-    quick_books.close()
+    session.close()
 
 def test_connection_error():     
-    with pytest.raises(Exception):
+    with pytest.raises(QBConnectionError):
         error_con = QuickBooks("MissingFile").connect()
 
+def test_session(): 
+    session = QuickBooks(TestConf.DSN)
+    session.connect()
+    assert isinstance(session.cnxn, Connection)
+    assert isinstance(session.cursor, Cursor)
+    session.close()
 
 
 def test_query(): 
-    
-    qb = QuickBooks(remote_dsn='qbtest')
-    qb.connect()
+    session = QuickBooks(remote_dsn=TestConf.DSN)
+    session.connect()
 
-    qb.tables()
-    x = None
-    qb.cursor.execute('SELECT * FROM Customer')
+    resp = session.sql('select * from account', [])
+    resp.columns().fetchone()
+    resp_all = resp.fetchall()
     
-    qb.sql('SELECT * FROM Customer WHERE Name = ?', 'HarryPotter')
-    qb.fetchone()
-    qb.last_insert('Customer')
-    qb.cursor.execute('sp_tables')
-    qb.cursor.fetchone()
+    assert isinstance(resp_all, list)
+    assert isinstance(resp.columns().fetchone(), Row)
+    session.close()
+
+def test_expense_query(): 
+    session = QuickBooks(TestConf.DSN)
+    session.connect()
+
+    resp = session.sql('select * from account where accounttype = ?', ['expense'])
+    
+    assert isinstance(resp.fetchone(), Row)
+    expense_row = resp.fetchone()
+    assert expense_row.AccountType == 'Expense'
+    assert isinstance(expense_row.ListID, str)
+    session.close()
+
+def test_methods():
+    session = QuickBooks(TestConf.DSN)
+    session.connect()
+
+    tables = session.tables()
+    
+    session.cursor.execute('SELECT * FROM Customer')
+    
+    resp = session.sql('select * from Customer where isactive = ?', [True])
+    row_customer = resp.fetchone()
+    assert row_customer.IsActive
+
+    resp = session.sql('select * from Customer where isactive = ?', [1])
+    row_customer = resp.fetchone()
+    assert row_customer.IsActive
+
  
 def test_call():
     con = QuickBooks("qbtest")

@@ -1,3 +1,6 @@
+# Inherit from BaseCredit, BaseDebit
+# Should handle 1 or many lines 
+# Check for balance 
 
 class Journal: 
     __table__ = 'Journal'

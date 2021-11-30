@@ -28,7 +28,10 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
     ],
-    # install_requires = []z
+    install_requires = [
+        'pandas',
+        'pyodbc' 
+    ],
     # test_suite='tests', 
     # tests_require=[]
     )

@@ -1,7 +1,5 @@
-from .baseobject import BaseObject
 
-class Address(BaseObject): 
-
+class Address: 
     def __init__(self, **kwargs): 
         self.BillAddressAddr1 = kwargs.pop('BillAddressAddr1', None)
         self.BillAddressAddr2 = kwargs.pop('BillAddressAddr2', None)

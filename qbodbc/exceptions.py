@@ -1,8 +1,11 @@
-class QBConnectionError(Exception): 
+class QuickBooksError(Exception): 
     pass 
 
-class QBMissingTable(Exception): 
+class QBConnectionError(QuickBooksError): 
     pass 
 
-class QBCreateMethod(Exception):
+class QBMissingTable(QuickBooksError): 
+    pass 
+
+class QBCreateMethod(QuickBooksError):
     pass
