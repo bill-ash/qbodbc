@@ -1,21 +1,9 @@
-from qbodbc import QuickBooks
-import pytest 
-from qbodbc.objects import Customer
 import random
-
-def name_generator(): 
-    first_name = [
-        'bob', 'marty', 'marsha', 'rasham', 'greg', 'gregory',
-        'steve', 'mary', 'bill', 'suf', 'ashley', 'bently',
-        'vicky', 'neria', 'moo', 'cow', 'dog', 'hary', 'fenti'
-    ]
-    last_name = [
-        'meek', 'bills', 'type', 'popcorn', 'wordsss', 'blake'
-        'blane', 'ash', 'blaire', 'world', 'fair', 'yarn', 'plow', 
-        'rank', 'rafiki', 'reynolds', 'bear'
-        ]
-
-    return f"{random.choice(first_name)} {random.choice(last_name)}"
+import pytest
+ 
+from qbodbc import QuickBooks
+from qbodbc.objects import Customer
+from qbodbc.utils import name_generator
 
 def test_insert(): 
     
@@ -45,6 +33,7 @@ def test_insert():
     # Pass the session object to all create methods
     insert_cursor = session.connect()
 
+    # cust1.save(qb=session)
     session.query('select * from customer')
     session.cursor.execute('select * from customer')
     insert_cursor.execute('select * from customer').fetchall()
@@ -70,6 +59,8 @@ def test_insert():
         
     resp_list = [c.create(qb=session) for c in customers]
     
+    resp = Customer().get(FullName = '')
+
     session.close()
 
 

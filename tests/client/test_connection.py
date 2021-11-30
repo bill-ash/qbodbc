@@ -1,20 +1,27 @@
 import pytest
 from qbodbc import QuickBooks 
 from qbodbc.exceptions import QBMissingTable
+import pandas as pd 
+
 
 def test_connection(): 
-    con = QuickBooks('qbtest')
-    con.connect()
-    customer = con.query('SELECT * FROM Customer')
+    quick_books = QuickBooks('qbtest')
+    quick_books.connect()
     
+    customer = quick_books.query('SELECT * FROM Customer')
+    assert isinstance(customer, pd.DataFrame)
+    
+
     with pytest.raises(QBMissingTable) as e_info: 
-        error = con.query("SELECT * FROM Missing")
+        error = quick_books.query("SELECT * FROM Missing")
     
-    con.close()
+    quick_books.close()
 
 def test_connection_error():     
     with pytest.raises(Exception):
         error_con = QuickBooks("MissingFile").connect()
+
+
 
 def test_query(): 
     
@@ -22,6 +29,11 @@ def test_query():
     qb.connect()
 
     qb.tables()
+    x = None
+    qb.cursor.execute('SELECT * FROM Customer')
+    
+    qb.sql('SELECT * FROM Customer WHERE Name = ?', 'HarryPotter')
+    qb.fetchone()
     qb.last_insert('Customer')
     qb.cursor.execute('sp_tables')
     qb.cursor.fetchone()

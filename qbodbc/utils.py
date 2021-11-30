@@ -1,5 +1,6 @@
 import datetime 
 from decimal import Decimal 
+import random 
 
 # Don't need to format date!!! Will accept date time attribute! 
 # def format_date(date): 
@@ -30,18 +31,16 @@ def as_date(y, m, d):
     return datetime.date(y, m, d)
 
 
-def format_qs(vals):
-    return ",".join("?" * len(vals)) 
-    
+def name_generator(): 
+    first_name = [
+        'bob', 'marty', 'marsha', 'rasham', 'greg', 'gregory',
+        'steve', 'mary', 'bill', 'suf', 'ashley', 'bently',
+        'vicky', 'neria', 'moo', 'cow', 'dog', 'hary', 'fenti'
+    ]
+    last_name = [
+        'meek', 'bills', 'type', 'popcorn', 'wordsss', 'blake'
+        'blane', 'ash', 'blaire', 'world', 'fair', 'yarn', 'plow', 
+        'rank', 'rafiki', 'reynolds', 'bear'
+        ]
 
-def process_insert(header, table): 
-    """Turn dictionary into SQL insert. Integers will 
-    need to be handled on runtime."""
-    names = header.keys()
-    values = format_qs(header.values())
-    return (
-        f"""INSERT INTO {table} ({', '.join(names)}) VALUES ({values})"""
-    )
-
-
-
+    return f"{random.choice(first_name)} {random.choice(last_name)}"

@@ -48,24 +48,25 @@ class QuickBooks:
             print("Error: ", e)
             raise QBMissingTable
 
-    def sql(self, sql, params):
+    def sql(self, sql, params=None):
+        """Executes some raw sql"""
         return self.cursor.execute(sql, params)
 
     def last_insert(self, table): 
         return self.cursor.execute(f'sp_lastinsertid {table}').fetchval()
 
-
-    def table_columns(self, table): 
+    def columns(self, table): 
         return self.query(f'sp_columns {table}')[
-            ['tablename', 'columnname', 'type', 'typename', 'remarks', 'default',
-            'datatype', 'is_nullable','updateable', 'insertable', 'required_on_insert',
-            'format', 'realtes_to', 'jumpin_type', 'custom_field_name'
-            ]
+            ['COLUMNNAME', 'TYPENAME', 'NULLABLE',
+       'REMARKS', 'DEFAULT', 'DATATYPE', 'DATETIME_SUBTYPE',
+       'ORDINAL_POSITION', 'IS_NULLABLE', 'QUERYABLE', 'UPDATEABLE',
+       'INSERTABLE', 'REQUIRED_ON_INSERT', 'FORMAT', 'RELATES_TO',
+       'JUMPIN_TYPE', 'CUSTOM_FIELD_NAME']
         ]
 
 
     def primary_keys(self, table): 
-        return self.cursor.execute(f'sp_primarykeys {"table"}').fetchall()
+        return self.cursor.execute(f'sp_primarykeys {table}').fetchall()
     
     
     def optimize_full_sync(self, table=None):
@@ -75,7 +76,8 @@ class QuickBooks:
 
     def tables(self): 
         cc = [list((c[2], c[4])) for c in self.cursor.execute('sp_tables').fetchall()]
-        pprint(cc, width=200)
+        # pprint(cc, width=200)
+        print(*cc, sep='\n')
     
     
     def file_name(self): 

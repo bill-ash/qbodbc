@@ -3,7 +3,6 @@ from qbodbc.objects import Customer
 
 # Connect to the file defined in the qbtest configuration 
 con = QuickBooks(DSN='qbtest')
-con = QuickBooks(DSN='C9Smart')
 cursor = con.connect()
 
 # Each call still needs to be made independently?
@@ -40,5 +39,4 @@ con.close()
 # con_string = "Driver={QRemote for QuickBooks};OLE DB Services=-2;IPAddress=192.168.14.143;Port=4500;RemoteDSN=qbtest;"
 from qbodbc.objects import Customer
 customer = Customer(Name='MySuperName', AccountNumber='2312')
-
 customer.create()

@@ -1,4 +1,4 @@
-from qbodbc import QB
+from qbodbc import QuickBooks
 from qbodbc.objects import Bill 
 from qbodbc.utils import as_decimal
 
@@ -18,7 +18,6 @@ test_bill = Bill(vendor = "Data Storage Co.",
 test_bill.add_item(
     "Deposit", "Deposit for future work.", as_decimal(1), 
     as_decimal(99.99) 
-    # ItemLineClassRefFullName = "Project"
     )
 
 # Add an expense line 
@@ -29,14 +28,12 @@ test_bill.add_expense(
 )
 
 # Open a connection with QuickBooks
-con = QB("qbtest")
+con = QuickBooks("qbtest")
+con.connect()
 
 # Inspect the bill 
 test_bill
 
-
-# Create the bill using the connection object
-bill_resp = con.create(test_bill)
 
 # Close the connection 
 con.close()
