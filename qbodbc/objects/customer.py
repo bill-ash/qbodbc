@@ -1,5 +1,5 @@
 from qbodbc.objects.address import Address
-from qbodbc.objects.baseobject import BaseObject
+from qbodbc.objects.base_object import BaseObject
 from qbodbc.utils import Ref
 
 class Customer(BaseObject, Address): 

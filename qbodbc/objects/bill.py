@@ -1,97 +1,75 @@
-from typing import Optional, List
-
-from dataclasses import dataclass
-from qbodbc.client import QuickBooks 
-from qbodbc.utils import * 
-import pandas as pd 
 from decimal import Decimal 
 from pprint import pprint 
+from typing import List
+from qbodbc.utils import Ref
+from qbodbc.objects.base_object import BaseObject 
 
-class Bill:
-    """Bill container."""
-    # Cache the most recent calls for all objects.
-    _table = None 
-    args = None
+class BillItemLine: 
+    """
+    Add a line item to a bill. Minimum required fields. Other items: 
+        - class: ItemLineClassRefFullName
+        - customer: ItemLineCustomerRefFullName
+        - customer:job: ItemLineCustomerRefFullName
+        - cogs account: ItemLineOverrideItemAccountRefFullName  
+    """
+    def __init__(self, Item: str, Desc: str, Quantity: Decimal, Amount: Decimal, **kwargs): 
+        self.ItemLineItemRefFullName = Item
+        self.ItemLineDesc = Desc
+        self.ItemLineQuantity = Quantity
+        self.ItemLineCost = Amount
+        self.FQSaveToCache = 1 # Default to save 
+        self.ItemLineItemRefListId = kwargs.pop('ItemLineItemRefListId', None)
+        self.ItemLineCustomerRefFullName = kwargs.pop('ItemLineCustomerRefFullName', None)
+        self.ItemLineOverrideItemAccountRefFullName = kwargs.pop('ItemLineOverrideItemAccountRefFullName', None)
+        self.ItemLineClassRefFullName = kwargs.pop('ItemLineClassRefFullName', None)
 
-    def __init__(self, 
-        vendor: str,
-        account: str, 
-        date: datetime.date, 
-        ref_num: str,
-        memo: str,
-        **kwargs):
+class BillExpenseLine:
+    def __init__(self, account: str, memo: str, amount: Decimal, **kwargs): 
+        self.ExpenseLineAccountRefFullName = account
+        self.ExpenseLineMemo = memo
+        self.ExpenseLineAmount = amount
+ 
+
+
+
+class Bill(BaseObject):
+    __table__name__ = 'BillItemLine'
+
+    def __init__(self, **kwargs): 
         """Bill with minimum field requirements.""" 
-        self.header = {
-            key : value for key, value in {
-                "VendorRefFullName": vendor,
-                "APAccountRefFullName": account, 
-                "TxnDate": date, 
-                "RefNumber": ref_num,
-                "Memo": memo,
-                **kwargs
-                }.items() if value is not None 
-            }
+        
+        self.VendorRefFullName = kwargs.pop('Vendor', None)
+        self.APAccountRefFullName = kwargs.pop('APAccount', None)
+        self.TxnDate = kwargs.pop('TxnDate', None)
+        self.RefNumber = kwargs.pop('RefNumber', None)
+        self.Memo = kwargs.pop('Memo', None)
+        
         # List of dictionaries 
         self.line_item = [] 
         self.line_expense = [] 
 
-    @classmethod
-    def get_args(cls, con): 
-        try: 
-            bill_args = con.query("sp_columns Bill")
-            args = bill_args[bill_args["IS_NULLABLE"] == "YES"][["COLUMNNAME", "TYPENAME"]]
-            pprint(args)
-            cls.args = args
-        except Exception as e: 
-            print("Error: ", e)
+    def add_item(self, item):
+        """
+        Takes a list of dictionaries or a single dictionary
+        """
+        if isinstance(item, list): 
+            [self.line_item.append(i) for i in item]
+        else: 
+            self.line_item.append(item)
 
-    @classmethod 
-    def get_table(cls, con):
-        """Cache results if a read is done."""
-        cls._table = con.query("SELECT * FROM Bill")
+    def add_expense(self, expense): 
+        ...
+        # """Add an expense item to a bill."""
+        # bill_line = {
+        #     key : value for key, value in {
+        #         }.items() if value is not None 
+        #     }
+        # self.line_expense.append(bill_line)
 
-
-    def add_item(self,
-        item: str,
-        memo: Optional[str],
-        quantity: Decimal, 
-        amount: Decimal, 
-        **kwargs
-        ) -> List:
-        """"Add a line item to a bill. Minimum required fields."""
-        bill_line = {
-            key : value for key, value in {
-                "ItemLineItemRefFullName": item,
-                "ItemLineDesc": memo, 
-                "ItemLineQuantity": quantity, 
-                "ItemLineCost": amount,
-                **kwargs
-                }.items() if value is not None 
-            }
-        self.line_item.append(bill_line)
-
-    def add_expense(self, 
-        account: str, 
-        memo: str, 
-        amount: Decimal, 
-        **kwargs): 
-        """Add an expense item to a bill."""
-        bill_line = {
-            key : value for key, value in {
-                "ExpenseLineAccountRefFullName": account,
-                "ExpenseLineMemo": memo,  
-                "ExpenseLineAmount": amount,
-                **kwargs, 
-                }.items() if value is not None 
-            }
-        self.line_expense.append(bill_line)
-
-    def _create(self, conn):
-        """Push bill instance to QuickBooks.
-        
-        Starts by adding a bill or expense line, cache the 
-        result with QODBC, then adding the header. 
-
+    def create(self, conn):
+        """
+        Push bill instance to QuickBooks.
+                
         If an item, and expense are required, the bill must exist before 
         the new insert can be preformed. 
         """
@@ -138,11 +116,30 @@ class Bill:
                 "ref_num": self.header["RefNumber"],
                 "id": last_bill
                 }
+    
+    def save(self, qb): 
+        
+        for i in self.line_item: 
+            
 
+    @classmethod
+    def get_args(cls, con): 
+        try: 
+            bill_args = con.query("sp_columns Bill")
+            args = bill_args[bill_args["IS_NULLABLE"] == "YES"][["COLUMNNAME", "TYPENAME"]]
+            pprint(args)
+            cls.args = args
+        except Exception as e: 
+            print("Error: ", e)
+
+    @classmethod 
+    def get_table(cls, con):
+        """Cache results if a read is done."""
+        cls._table = con.query("SELECT * FROM Bill")
 
 
     def __repr__(self):
         return f"""
-        Bill: {self.header["VendorRefFullName"]} - {self.header["RefNumber"]}
-        Line Items: {len(self.line_item)} Expense Items: {len(self.line_expense)}
-        """ 
+            Bill: {self.VendorRefFullName}: {self.RefNumber}
+            Line Items: {len(self.line_item)} Expense Items: {len(self.line_expense)}
+            """

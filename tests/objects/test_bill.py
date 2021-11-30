@@ -1,15 +1,32 @@
-# import pytest 
-# from qbodbc.utils import process_insert, as_decimal, as_date
-# from qbodbc.objects import Bill
-# from qbodbc import QuickBooks 
+from datetime import date 
+from decimal import Decimal
+import pytest 
+from qbodbc.objects import Bill
+from qbodbc import QuickBooks
+from qbodbc.objects.bill import BillItemLine 
+from tests.test_base import TestConf
 
-# bill_test = Bill(vendor = "Computer Store", 
-#         account = "Accounts Payable", 
-#         date = as_date(2020, 1, 1), 
-#         ref_num = "12331-1231", 
-#         memo = "PO123312", 
-#         DueDate = as_date(2021,1,1)
-#         )
+
+session = QuickBooks(TestConf.DSN)
+session.connect()
+session.tables()
+
+# bill_line_item = session.query('Select * from BillItemLine')
+
+items = session.sql('select * from Item').fetchall()
+vendor = session.sql('select * from vendor').fetchall()
+
+ServiceItems = [c.FullName for c in items if c.Type == 'ItemService']
+
+line_1 = BillItemLine(Item=ServiceItems[2], Desc='ItemServiceDescription', Quantity=2,
+    Amount=Decimal('20.21'))
+
+bill_test = Bill(Vendor = "Computer Store", APAccount = "Accounts Payable", 
+        Date = date(2020, 1, 1), RefNumber = "12331-1231", Memo = "PO123312", 
+        TxnDate = date(2021,1,1)
+        )
+
+bill_test.add_item(line_1)
 
 # bill_test.add_item(item='Books for Resale',
 #         memo= "OverRideTheDefault",
@@ -22,9 +39,7 @@
 #         amount = as_decimal(10.99)
 #         )
 
-# # Connect using a QB object to enforce UTF-8 encoding
-# con = QuickBooks("qbtest")
-# con.connect()
+
 
 # def test_exists(): 
 #         bill_test
@@ -50,10 +65,10 @@
 #         assert bill_expense_line == "INSERT INTO BillExpenseLine (ExpenseLineAccountRefFullName, ExpenseLineMemo, ExpenseLineAmount) VALUES (?,?,?)"
 
 
-# def test_bill_add(): 
-#         # Final implementation 
-#         resp = con.create(bill_test)
-#         assert resp["vendor"] == bill_test.header["VendorRefFullName"]
+def test_bill_add(): 
+        # Final implementation 
+        resp = bill_test.save(qb=session)
+        assert resp["vendor"] == bill_test.header["VendorRefFullName"]
 
 # def test_close_connection(): 
 #         con.close()
