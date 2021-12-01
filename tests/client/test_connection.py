@@ -34,7 +34,7 @@ def test_session():
 
 
 def test_query(): 
-    session = QuickBooks(remote_dsn=TestConf.DSN)
+    session = QuickBooks(remote_dsn=TestConf.DSN, ip=TestConf.IP)
     session.connect()
 
     resp = session.sql('select * from account', [])
@@ -75,7 +75,7 @@ def test_methods():
 
  
 def test_call():
-    con = QuickBooks("qbtest")
+    con = QuickBooks(TestConf.DSN)
     con.connect()
     account = con.query("SELECT * FROM Account")
     assert len(account) > 1

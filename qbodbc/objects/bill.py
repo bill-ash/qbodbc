@@ -4,7 +4,7 @@ from typing import List
 from qbodbc.utils import Ref
 from qbodbc.objects.base_object import BaseObject 
 
-class BillItemLine: 
+class BillItemLine(BaseObject): 
     """
     Add a line item to a bill. Minimum required fields. Other items: 
         - class: ItemLineClassRefFullName
@@ -12,116 +12,98 @@ class BillItemLine:
         - customer:job: ItemLineCustomerRefFullName
         - cogs account: ItemLineOverrideItemAccountRefFullName  
     """
+    __table_name__ = 'BillItemLine'
+
     def __init__(self, Item: str, Desc: str, Quantity: Decimal, Amount: Decimal, **kwargs): 
         self.ItemLineItemRefFullName = Item
         self.ItemLineDesc = Desc
         self.ItemLineQuantity = Quantity
         self.ItemLineCost = Amount
         self.FQSaveToCache = 1 # Default to save 
+
         self.ItemLineItemRefListId = kwargs.pop('ItemLineItemRefListId', None)
         self.ItemLineCustomerRefFullName = kwargs.pop('ItemLineCustomerRefFullName', None)
         self.ItemLineOverrideItemAccountRefFullName = kwargs.pop('ItemLineOverrideItemAccountRefFullName', None)
         self.ItemLineClassRefFullName = kwargs.pop('ItemLineClassRefFullName', None)
 
-class BillExpenseLine:
+class BillExpenseLine(BaseObject):
+    __table_name__ = 'BillExpenseLine'
+
     def __init__(self, account: str, memo: str, amount: Decimal, **kwargs): 
         self.ExpenseLineAccountRefFullName = account
         self.ExpenseLineMemo = memo
         self.ExpenseLineAmount = amount
  
 
-
-
 class Bill(BaseObject):
-    __table__name__ = 'BillItemLine'
+    __table_name__ = 'Bill'
 
     def __init__(self, **kwargs): 
         """Bill with minimum field requirements.""" 
-        
         self.VendorRefFullName = kwargs.pop('Vendor', None)
         self.APAccountRefFullName = kwargs.pop('APAccount', None)
         self.TxnDate = kwargs.pop('TxnDate', None)
         self.RefNumber = kwargs.pop('RefNumber', None)
         self.Memo = kwargs.pop('Memo', None)
+        # [setattr(self, k, v) for k,v in kwargs.items()]
         
         # List of dictionaries 
-        self.line_item = [] 
-        self.line_expense = [] 
+        self._line_item = [] 
+        self._line_expense = [] 
 
     def add_item(self, item):
         """
         Takes a list of dictionaries or a single dictionary
         """
         if isinstance(item, list): 
-            [self.line_item.append(i) for i in item]
+            [self._line_item.append(i) for i in item]
         else: 
-            self.line_item.append(item)
+            self._line_item.append(item)
 
     def add_expense(self, expense): 
-        ...
-        # """Add an expense item to a bill."""
-        # bill_line = {
-        #     key : value for key, value in {
-        #         }.items() if value is not None 
-        #     }
-        # self.line_expense.append(bill_line)
+        """Add an expense item to a bill."""
+        if isinstance(expense, list): 
+            [self._line_expense.append(i) for i in expense]
+        else: 
+            self._line_expense.append(expense)
 
-    def create(self, conn):
-        """
-        Push bill instance to QuickBooks.
-                
+    def save(self, qb=''):
+        """        
         If an item, and expense are required, the bill must exist before 
         the new insert can be preformed. 
+
+        Overide the default method since it needs to work on an iterable. 
+
+        Pop an item in the list and assign the current bill args to it. 
         """
-        if len(self.line_item) > 0:
-            for i in self.line_item:
-                i["FQSaveToCache"] = as_decimal(1)
-                _line = process_insert(i , "BillItemLine")
-                conn.execute(_line, *i.values())
-            
-            conn.execute(
-                process_insert(self.header, "Bill"), *list(self.header.values())
-                )
-            
-            last_bill = conn.execute("sp_lastinsertid Bill").fetchall()[0][0]
+        try: 
+            while self._line_item: 
+                print('***', len(self._line_item), '***')
 
-            if len(self.line_expense) > 0:     
-                for i in self.line_expense: 
-                    expense = {"TxnID": last_bill, **i}
-                    _line = process_insert(expense , "BillExpenseLine")
-                    conn.execute(_line, *list(expense.values()))
-            
-            # Output
+                head = self._line_item.pop(0)
+                head.update_obj(self)
+
+                if len(self._line_item) == 0:    
+                    # Update FQSaveToCache == 0 
+                    head.FQSaveToCache = 0
+                    qb.cursor.execute(head.create(), head.to_values())
+                else: 
+                    qb.cursor.execute(head.create(), head.to_values())
+
             return {
-                "vendor": self.header["VendorRefFullName"], 
-                "ref_num": self.header["RefNumber"],
-                "id": last_bill
+                'Vendor': self.VendorRefFullName, 
+                'RefNum': self.RefNumber,
+                # Last insert on a parent table will still refrence an insert on the child table
+                "id": qb.last_insert(self.__table_name__)
                 }
+
+        except Exception as e:
+            return {
+                "id": e.args[-1],
+                "key": self.RefNumber
+            }
        
-        else: 
-            for i in self.line_expense: 
-                i["FQSaveToCache"] = as_decimal(1)
-                _line = process_insert(i , "BillExpenseLine")
-                conn.execute(_line, *i.values())
-            
-            conn.execute(
-                process_insert(self.header, "Bill"), *list(self.header.values())
-                )
-            
-            last_bill = conn.execute("sp_lastinsertid Bill").fetchall()[0][0]
-
-            # Output
-            return {
-                "vendor": self.header["VendorRefFullName"], 
-                "ref_num": self.header["RefNumber"],
-                "id": last_bill
-                }
-    
-    def save(self, qb): 
-        
-        for i in self.line_item: 
-            
-
+       
     @classmethod
     def get_args(cls, con): 
         try: 
@@ -141,5 +123,5 @@ class Bill(BaseObject):
     def __repr__(self):
         return f"""
             Bill: {self.VendorRefFullName}: {self.RefNumber}
-            Line Items: {len(self.line_item)} Expense Items: {len(self.line_expense)}
+            Line Items: {len(self._line_item)} Expense Items: {len(self._line_expense)}
             """

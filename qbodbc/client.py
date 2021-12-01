@@ -11,7 +11,7 @@ from .exceptions import (
 class QuickBooks: 
     pyodbc.pooling = False
 
-    def __init__(self, DSN=None, remote_dsn=None, ip="192.168.14.143", port=4500): 
+    def __init__(self, DSN=None, remote_dsn=None, ip='', port=4500): 
         """Create a local or remote connection"""
         if DSN:
             self.connection_string = ("DSN=" + DSN)
