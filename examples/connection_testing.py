@@ -6,9 +6,9 @@ cnxn = pyodbc.connect('DSN=qbtest')
 # Set encoding 
 cnxn.setencoding(encoding='utf-8')
 
-# Shoe the current connected dsn 
+# Show the current connected dsn 
 # cnxn.getinfo(pyodbc.SQL_DATA_SOURCE_NAME)
-# Shoes 0 for qodbc 
+# Shows 0 for qodbc 
 # cnxn.getinfo(pyodbc.SQL_MAX_CONCURRENT_ACTIVITIES)
 
 # Create cursors independently for concurrent queries 
@@ -62,6 +62,7 @@ cursor.fetchone()
 
 # Close the instance of cursor 
 cursor.close()
+
 # Close a connection - closes file 
 cnxn.close()
 

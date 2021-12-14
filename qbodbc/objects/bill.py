@@ -40,8 +40,8 @@ class Bill(BaseObject):
 
     def __init__(self, **kwargs): 
         """Bill with minimum field requirements.""" 
-        self.VendorRefFullName = kwargs.pop('Vendor', None)
-        self.APAccountRefFullName = kwargs.pop('APAccount', None)
+        self.VendorRefFullName = kwargs.pop('VendorRefFullName', None)
+        self.APAccountRefFullName = kwargs.pop('APAccountRefFullName', None)
         self.TxnDate = kwargs.pop('TxnDate', None)
         self.RefNumber = kwargs.pop('RefNumber', None)
         self.Memo = kwargs.pop('Memo', None)
