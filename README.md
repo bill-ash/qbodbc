@@ -2,7 +2,7 @@
 
 Connect to your QuickBooks desktop instance with Python. 
 
-# Connecting 
+## Connecting 
 
 The application server, and the QuickBooks instance must be on 
 the same machine or have QODBC driver and QRemote running 

@@ -26,13 +26,22 @@ def format_decimal(vals):
 
 
 def as_decimal(x):
+    """
+    Decimal rounded two places
+    """
     return Decimal(x).__round__(2)
 
-def as_date(y, m, d):
-    return datetime.date(y, m, d)
+def as_date(x, format='%m/%d/%Y'):
+    """
+    Convert date string to datetime object
+    """
+    return datetime.strptime(x, format)
 
 
 def name_generator(): 
+    """
+    Create random names in tests
+    """
     first_name = [
         'bob', 'marty', 'marsha', 'rasham', 'greg', 'gregory',
         'steve', 'mary', 'bill', 'suf', 'ashley', 'bently',
@@ -48,10 +57,16 @@ def name_generator():
 
 
 def account_generator(): 
+    """
+    Create random accounts in tests 
+    """
     return str(secrets.randbits(29))
 
 
 class Ref: 
+    """
+    Reference for parent child tables
+    """
     def __init__(self): 
         self.Name = ""
         self.Value = ""

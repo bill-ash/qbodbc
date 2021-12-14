@@ -8,10 +8,9 @@ from tests.test_base import TestConf
 
 insert_resp = ' '.join("""
         insert into BillItemLine 
-                (ItemLineItemRefFullName, ItemLineDesc, ItemLineQuantity, 
-                ItemLineCost, FQSaveToCache, VendorRefFullName, 
-                APAccountRefFullName, TxnDate, RefNumber, Memo) 
-        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (ItemLineItemRefFullName, ItemLineDesc, ItemLineQuantity,
+                ItemLineCost, FQSaveToCache, TxnDate, RefNumber, Memo) 
+        values (?, ?, ?, ?, ?, ?, ?, ?)
 """.replace('\n', '').split())
 
 def test_bill_create():
@@ -21,8 +20,11 @@ def test_bill_create():
                 Quantity=2,
                 Amount=Decimal('20.21'))
 
-        bill_test = Bill(Vendor = "Computer Store", APAccount = "Accounts Payable", 
-                Date = date(2020, 1, 1), RefNumber = "12331-1231", Memo = "PO123312", 
+        bill_test = Bill(Vendor = "Computer Store",
+                APAccount = "Accounts Payable", 
+                Date = date(2020, 1, 1),
+                RefNumber = "12331-1231",
+                Memo = "PO123312", 
                 TxnDate = date(2021,1,1))
 
         bill_test.add_item(line_1)
@@ -48,9 +50,9 @@ def test_pre_insert():
         cogs_account = session.sql('select Name from account where AccountType = ?', ['CostOfGoodsSold']).fetchall()
         class_name = session.sql('select FullName from class').fetchall()
         
-        bill_test = Bill(Vendor = vendor[15][0],
-                APAccount = "Accounts Payable", 
-                RefNumber = "12331-1231",
+        bill_test = Bill(VendorRefFullName = vendor[15][0],
+                APAccountRefFullName = "Accounts Payable", 
+                RefNumber = "1233-1231",
                 Memo = "PO123312", 
                 # ItemLineClassRefFullName = 
                 TxnDate = date(2021,1,1)
@@ -61,7 +63,7 @@ def test_pre_insert():
                 Desc='OverideAccount', 
                 Quantity=2,
                 ItemLineCustomerRefFullName=customer[2][0], 
-                ItemLineOverrideItemAccountRefFullName = cogs_account[2][0],
+                ItemLineOverrideItemAccountRefFullName=cogs_account[2][0],
                 Amount=Decimal('20.21'))
 
         line_2 = BillItemLine(Item=items[2][0],
@@ -84,6 +86,7 @@ def test_pre_insert():
         
         assert len(bill_test._line_item) == 4
         
+
         # Create the bill 
         resp = bill_test.save(qb=session)
         last_insert = session.last_insert('BillItemLine')

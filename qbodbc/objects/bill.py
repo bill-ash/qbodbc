@@ -20,12 +20,16 @@ class BillItemLine(BaseObject):
         self.ItemLineQuantity = Quantity
         self.ItemLineCost = Amount
         self.FQSaveToCache = 1 # Default to save 
-
+        # Overide defaults 
         self.ItemLineItemRefListId = kwargs.pop('ItemLineItemRefListId', None)
         self.ItemLineCustomerRefFullName = kwargs.pop('ItemLineCustomerRefFullName', None)
         self.ItemLineOverrideItemAccountRefFullName = kwargs.pop('ItemLineOverrideItemAccountRefFullName', None)
         self.ItemLineClassRefFullName = kwargs.pop('ItemLineClassRefFullName', None)
 
+    def __repr__(self):
+        [(x['ItemRefFullName'], x['ItemLineQuantity'],) for x in self] 
+        return ''
+        
 class BillExpenseLine(BaseObject):
     __table_name__ = 'BillExpenseLine'
 
@@ -49,11 +53,13 @@ class Bill(BaseObject):
         
         # List of dictionaries 
         self._line_item = [] 
+        # self.BillLineItems = BillItemLine() 
         self._line_expense = [] 
+        # self.BillLineExpense = BillExpenseLine() 
 
     def add_item(self, item):
         """
-        Takes a list of dictionaries or a single dictionary
+        Take BillLineItem objects: list or single object
         """
         if isinstance(item, list): 
             [self._line_item.append(i) for i in item]
